@@ -4,6 +4,7 @@ private int index; // the index of this vertex
 private LinkedList<AdjListNode> adjList; // the adjacency list of vertex
   // possibly other fields, e.g. representing data stored at the node
   /** create a new instance of vertex with index n */
+private String parent = "";
 public Vertex(int n) {
 	index = n; // set index
 	adjList = new LinkedList<AdjListNode>();// create empty adjacency list
@@ -39,6 +40,13 @@ public Vertex(int n) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+	public String getParent() {
+		return parent;
+	}
+	public void setParent(String parent) {
+		this.parent = parent;
+	}
   
   
 }
+

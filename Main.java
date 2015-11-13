@@ -1,94 +1,120 @@
-import java.awt.EventQueue;
 import java.io.*;
 import java.util.*;
 
-import javax.swing.JOptionPane;
 /**
- program to find shortest path using Dijkstra's algorithm
+ program to find shortest path using the backtrack search algorithm
  */
 public class Main {
-	static int firstLineIndex = 0;
-	static int lastLineIndex = 0;
-	static ArrayList<Integer> tempVisited = new ArrayList<Integer>();
-	static ArrayList<Integer> tempVisitedValue = new ArrayList<Integer>();
+	private static List<Integer> VisitedVertex = new LinkedList<Integer>();
+	private static int startV;
+	private static int endV;
+	private static int countofline;
+	private static int x =0;
 	public static void main(String[] args) throws IOException {
-		ArrayList<Integer> unvisited = new ArrayList<Integer>();
-		int size =0;
 
-		ArrayList <Vertex> vertexArray = new ArrayList<Vertex>();
-		ArrayList <String> strArray = new ArrayList();
 		long start = System.currentTimeMillis();
+		List<String> alllines = new LinkedList<String>();
 		String inputFileName = args[0]; // input file name
-		
+  
 		FileReader reader = new FileReader(inputFileName);
 		Scanner in = new Scanner(reader);
+		
 		// read in the data here
-		while(in.hasNext()){
-			if(size ==0){
-				size = Integer.parseInt(in.nextLine());
-			}
-			strArray.add(in.nextLine());
-		}
-		String[] startend = strArray.get(strArray.size()-1).split(" ");
-		firstLineIndex = Integer.parseInt(startend[0]);
-		lastLineIndex = Integer.parseInt(startend[1]);
-		strArray.remove(strArray.size()-1);
-		for(int i=0;i<strArray.size();i++){
-			String[] strValue = strArray.get(i).split(" ");
-			Vertex vertex = null;
-			unvisited.add(i);
-			vertex = new Vertex(i);
-			for(int a=0;a<strValue.length;a++){
-				if(Integer.parseInt(strValue[a]) != 0){
-					vertex.addToAdjList(a,Integer.parseInt(strValue[a]));
-				}
-			}
-			vertexArray.add(vertex);
-		}
+		while (in.hasNextLine()) {
+			 String line = in.nextLine();
+			alllines.add(line);
+        }
+		in.close();
 		reader.close();
-	
-		// create graph here
-		for(int i=0; i<unvisited.size();i++){
-			if(unvisited.get(i) == firstLineIndex || unvisited.get(i)== lastLineIndex){
-				unvisited.remove(i);
+		
+		countofline = Integer.parseInt(alllines.get(0));
+		 Vertex[] arrayofvertice = new Vertex[countofline];
+		 String[] numbersinaline;
+		 int y=0;
+		 int count1=0;
+		 for(int i = 0; i < countofline;i++){
+			 numbersinaline = alllines.get(i+1).split("\\s+");
+			 count1 =0;
+			 arrayofvertice[i] = new Vertex(i);
+			 while(count1 < numbersinaline.length){
+				 if(Integer.parseInt(numbersinaline[count1]) != 0){
+				 arrayofvertice[i].addToAdjList(count1, Integer.parseInt(numbersinaline[count1]));
+				 //arrayofvertice[i].addTodistanceList(Integer.parseInt(numbersinaline[count1]));
+				 y++;
+				 }
+				
+				 count1++;
+			 }
+		 }
+		String lastline = alllines.get(alllines.size()-1);
+		numbersinaline = lastline.split("\\s+");
+		startV = Integer.parseInt(numbersinaline[0]);
+		endV = Integer.parseInt(numbersinaline[1]);
+		
+
+		int parent=0;
+		int index = startV;
+		boolean visitedSetted = false;
+		while(x <= y){
+			
+			parent = index;
+			index = getsmallest(arrayofvertice, index, parent);
+			visitedSetted = setVisited(parent, index, arrayofvertice);
+			if(!VisitedVertex.isEmpty()){
+			if(VisitedVertex.get(VisitedVertex.size()-1) != index && index != 2){
+				VisitedVertex.add(index);
 			}
-		}
-		for(int i=0;i<vertexArray.size();i++){
-			vertexArray.get(i).setAdjList(sortvalueNsortindex(vertexArray.get(i).getAdjList()));
-		}
-		rm(firstLineIndex, vertexArray, lastLineIndex, firstLineIndex);
-		/*
-		int index = firstLineIndex;
-		for(int i=0;i<vertexArray.size();i++){
-			for(int a=0;a<vertexArray.get(i).getAdjList().size();a++){
-				if(vertexArray.get(i).getAdjList().get(a).getVertexNumber() == index ){
-					
+			}
+			else{
+				VisitedVertex.add(index);
+			}
+			if(visitedSetted == true){
+				if(index == endV){
+					x = x-2;
+					index = parent;
+
+				}
+			}
+		}		
+		
+		// create graph here
+		
+		
+		// do the work here
+		
+
+		// end timer and print total time
+		ArrayList<Integer> list = new ArrayList<Integer>();
+		list.add(startV);
+		for(int i=0;i<VisitedVertex.size();i++){
+			if(VisitedVertex.get(i) != endV){
+				list.add(VisitedVertex.get(i));
+			}else if(i != VisitedVertex.size()){
+				list.add(VisitedVertex.get(i));
+				if(i+1 != VisitedVertex.size()){
+					list.add(startV);
 				}
 			}
 		}
-		*/
-		System.out.println(tempVisited);
-		// do the work here
 		String finalPath = null;
 		String path = null;
 		int tempPath = 0;
 		int currentIndex =0;
 		int finalDist =0;
-		for(int a=0;a<tempVisited.size();a++){
-			//System.out.println(tempVisited.get(a));
-			//System.out.println("visited " + tempVisited.get(a));
-			//System.out.println("size " + vertexArray.get(tempVisited.get(a)).getAdjList().size());
-			if(tempVisited.get(a) == firstLineIndex){
-				path = Integer.toString(tempVisited.get(a));
-				currentIndex = tempVisited.get(a);
+		for(int a=0;a<list.size();a++){
+			//System.out.println(list.get(a));
+			if(list.get(a) == startV){
+				path = Integer.toString(list.get(a));
+				tempPath =0;
+				currentIndex = list.get(a);
 				continue;
 			}
-			if(tempVisited.get(a) == lastLineIndex){
+			if(list.get(a) == endV){
 				//System.out.println("ending 1 path");
-				path = path + " " + tempVisited.get(a);
-				for(int i=0;i<vertexArray.get(currentIndex).getAdjList().size();i++){
-					if(vertexArray.get(currentIndex).getAdjList().get(i).getVertexNumber() == lastLineIndex){
-						tempPath = tempPath + vertexArray.get(currentIndex).getAdjList().get(i).getVertexValue();
+				path = path + " " + list.get(a);
+				for(int i=0;i<arrayofvertice[currentIndex].getAdjList().size();i++){
+					if(arrayofvertice[currentIndex].getAdjList().get(i).getVertexNumber() == endV){
+						tempPath = tempPath + arrayofvertice[currentIndex].getAdjList().get(i).getVertexValue();
 						//System.out.println("Path " + path);
 						//System.out.println("Dist "  + tempPath + " " + finalDist);
 						if(finalDist ==0){
@@ -98,131 +124,99 @@ public class Main {
 							finalDist = tempPath;
 							finalPath = path;
 						}
-						
-						path = null;
-						tempPath =0;
-						currentIndex =0;
 						continue;
 					}
 				}
 			}
-			if(tempVisited.get(a) != lastLineIndex && tempVisited.get(a) != firstLineIndex){
-				for(int i=0;i<vertexArray.get(currentIndex).getAdjList().size();i++){
-					if(vertexArray.get(currentIndex).getAdjList().get(i).getVertexNumber() == tempVisited.get(a)){
-						path = path + " " + vertexArray.get(currentIndex).getAdjList().get(i).getVertexNumber();
-						//System.out.println("path " +path);
+			if(list.get(a) != endV && list.get(a) != startV){
+				for(int i=0;i<arrayofvertice[currentIndex].getAdjList().size();i++){
+					if(arrayofvertice[currentIndex].getAdjList().get(i).getVertexNumber() == list.get(a)){
+						path = path + " " + arrayofvertice[currentIndex].getAdjList().get(i).getVertexNumber();
+						//System.out.println("path 2 " +path);
 						//System.out.println("before dist " +tempPath);
-						tempPath = tempPath + vertexArray.get(currentIndex).getAdjList().get(i).getVertexValue();
-						//System.out.println("dist " +tempPath);
-						currentIndex = vertexArray.get(currentIndex).getAdjList().get(i).getVertexNumber();
+						tempPath = tempPath + arrayofvertice[currentIndex].getAdjList().get(i).getVertexValue();
+						//System.out.println("dist 2 " +tempPath);
+						currentIndex = arrayofvertice[currentIndex].getAdjList().get(i).getVertexNumber();
 						continue;
 					}
 				}
 			}
 			//System.out.println("out come " + finalPath+" " + finalDist);
 		}
-		System.out.println("shortest path " + finalPath+" " + finalDist);
-		// end timer and print total time
-		
+		System.out.println("shortest path " + finalPath);
+		System.out.println("Shortest Dist " + finalDist);
 		long end = System.currentTimeMillis();
 		System.out.println("\nElapsed time: " + (end - start) + " milliseconds");
 	}
-	private static boolean rm(int index, ArrayList<Vertex> array, int end, int parent){
-		int tempIndex = index;
-		if(index == firstLineIndex){
-			tempVisited.add(firstLineIndex);
-		}
-		
-		LinkedList<AdjListNode> list = array.get(index).getAdjList();
-		for(int i=0;i<list.size();i++){
-			int count=0;
-
-			for(int a=0;a<list.size();a++){
-				if(list.get(a).isVisited()){
-					count = i;
-				}
-				if(count == list.size()){
-					return false;
-				}
-			}	
-				tempIndex = list.get(i).getVertexNumber();
-				if(tempIndex != parent && tempIndex != firstLineIndex){
-					if(tempIndex!= end && list.get(i).isVisited() == false){
-						if(tempIndex != firstLineIndex){
-							tempVisited.add(tempIndex);
-						}
-						list.get(i).setVisited(rm(tempIndex, array,end, index));
-						array.get(index).setAdjList(list);
-					}else if(tempIndex == end){
-						tempVisited.add(end);
-						tempVisited.add(firstLineIndex);
-						if(parent != firstLineIndex){
-							tempVisited.add(parent);
-						}
-						list.get(i).setVisited(true);
-					}
-				}
-		}
-		return true;
-	}
-	/*
-	public static void travelNode(ArrayList<Vertex> vertexList, int end, int index, ArrayList<Integer> tempVisited, ArrayList<Integer> visited, int currentVertex){
-		
-		if(index == end){
-			index = currentVertex;
-		}
-		LinkedList<AdjListNode> listed = vertexList.get(index).getAdjList();
-		int min=0;
-		int endNode =0;
-		
-		for(int i=0;i<listed.size();i++){
-			
-			if(listed.get(i).getVertexNumber() == end){
-				//tempVisited.add(listed.get(i).getVertexNumber());
-				endNode = listed.get(i).getVertexNumber();
-			}else if(min == 0){
-				min = listed.get(i).getVertexValue();
-				endNode = listed.get(i).getVertexNumber();
-			}else if(min > listed.get(i).getVertexValue()){
-				min = listed.get(i).getVertexValue();
-				endNode = listed.get(i).getVertexNumber();
-			}
-		}
-		index = endNode;
-		if(index != end){
-			currentVertex = endNode;
-		}
-		visited.add(endNode);
-		tempVisited.add(endNode);
-		travelNode(vertexList, end, index , tempVisited, visited,currentVertex);
-	}
-	*/
 	
-private static LinkedList<AdjListNode> sortvalueNsortindex(LinkedList<AdjListNode> list){
-		
-		LinkedList<Integer> indexofstartnumbersaftersort = new LinkedList<Integer>();
-		LinkedList<AdjListNode> adjList = list;
-		Integer[] listofstartnumbers = new Integer[adjList.size()];
-		for(int i=0;i < adjList.size(); i++){
-			listofstartnumbers[i] = adjList.get(i).getVertexValue();
-		}
-		Arrays.sort(listofstartnumbers);
-		for(int i = 0; i < adjList.size(); i++){
-			for(int j =0 ; j < adjList.size(); j++){
-			if(listofstartnumbers[i] == adjList.get(j).getVertexValue()){
-				indexofstartnumbersaftersort.add(adjList.get(j).getVertexNumber());
+private static boolean setVisited(int parent, int index, Vertex[] arrayofvertice) {
+	boolean firstcon=false;
+	boolean secondcon = false;
+		for(int i =0;i< arrayofvertice[index].getAdjList().size();i++){
+			if(arrayofvertice[index].getAdjList().get(i).getVertexNumber() == parent){
+				arrayofvertice[index].getAdjList().get(i).setVisited(true);
+				firstcon = true;
+			
 			}
 		}
-	}
-		adjList.clear();
-		AdjListNode node;
-		for(int i = 0 ; i < listofstartnumbers.length; i ++){
-			
-			node = new AdjListNode(indexofstartnumbersaftersort.get(i),listofstartnumbers[i]);
-			adjList.add(node);
+		for(int i =0;i<arrayofvertice[parent].getAdjList().size();i++){
+			if(arrayofvertice[parent].getAdjList().get(i).getVertexNumber() == index){
+				arrayofvertice[parent].getAdjList().get(i).setVisited(true);
+				secondcon = true;
+				
+			}
 		}
-		return adjList;
+		if(firstcon ==true && secondcon==true){
+			x= x+2;
+			return true;
+		}
+		return false;
+	}
 
-	}	
+public static int getsmallest(Vertex[] arrayofvertice, int index, int parent){
+	int result =0;
+	int min = 0;
+	int count=0;
+	for(int j =0;j< arrayofvertice[index].getAdjList().size();j++){
+		if(!arrayofvertice[index].getAdjList().get(j).isVisited()){
+			if(arrayofvertice[index].getAdjList().get(j).getVertexNumber() != parent){
+			if(min == 0){
+				min = arrayofvertice[index].getAdjList().get(j).getVertexValue();
+				result = arrayofvertice[index].getAdjList().get(j).getVertexNumber();
+			}
+			else if(min>arrayofvertice[index].getAdjList().get(j).getVertexValue() && arrayofvertice[index].getAdjList().get(j).getVertexNumber() != parent && arrayofvertice[index].getAdjList().get(j).getVertexNumber() != startV){
+				min = arrayofvertice[index].getAdjList().get(j).getVertexValue();
+				result = arrayofvertice[index].getAdjList().get(j).getVertexNumber();
+			}
+			}
+		}
+		else{
+			count++;
+		}		
+	}
+	if(count == arrayofvertice[index].getAdjList().size()){
+		result = Integer.parseInt(arrayofvertice[parent].getParent());
+	}
+	else if(result != parent){
+	arrayofvertice[result].setParent(Integer.toString(parent));
+	}
+	return result;
 }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
