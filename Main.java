@@ -6,14 +6,14 @@ import java.util.*;
  */
 public class Main {
 	private static List<Integer> VisitedVertex = new LinkedList<Integer>();
-	private static int startV;
-	private static int endV;
-	private static int countofline;
-	private static int x =0;
+	private static int firstVertex;
+	private static int lastVertex;
+	private static int numOfVertex;
+	private static int numVisitedEdge =0;
 	public static void main(String[] args) throws IOException {
 
 		long start = System.currentTimeMillis();
-		List<String> alllines = new LinkedList<String>();
+		List<String> vertexLines = new LinkedList<String>();
 		String inputFileName = args[0]; // input file name
   
 		FileReader reader = new FileReader(inputFileName);
@@ -22,101 +22,102 @@ public class Main {
 		// read in the data here
 		while (in.hasNextLine()) {
 			 String line = in.nextLine();
-			alllines.add(line);
+			vertexLines.add(line);
         }
 		in.close();
 		reader.close();
+		//get number of vertex
+		numOfVertex = Integer.parseInt(vertexLines.get(0));
 		
-		countofline = Integer.parseInt(alllines.get(0));
-		 Vertex[] arrayofvertice = new Vertex[countofline];
-		 String[] numbersinaline;
-		 int y=0;
+		/*
+		 * create vertex in vertexArray and add the number of edge for each vertex and its distance
+		 */
+		 Vertex[] vertexArray = new Vertex[numOfVertex];
+		 String[] vertexEdge;
+		 int totalEdge=0;
 		 int count1=0;
-		 for(int i = 0; i < countofline;i++){
-			 numbersinaline = alllines.get(i+1).split("\\s+");
+		 for(int i = 0; i < numOfVertex;i++){
+			 vertexEdge = vertexLines.get(i+1).split("\\s+");
 			 count1 =0;
-			 arrayofvertice[i] = new Vertex(i);
-			 while(count1 < numbersinaline.length){
-				 if(Integer.parseInt(numbersinaline[count1]) != 0){
-				 arrayofvertice[i].addToAdjList(count1, Integer.parseInt(numbersinaline[count1]));
-				 //arrayofvertice[i].addTodistanceList(Integer.parseInt(numbersinaline[count1]));
-				 y++;
+			 vertexArray[i] = new Vertex(i);
+			 while(count1 < vertexEdge.length){
+				 if(Integer.parseInt(vertexEdge[count1]) != 0){
+				 vertexArray[i].addToAdjList(count1, Integer.parseInt(vertexEdge[count1]));
+				 totalEdge++;
 				 }
 				
 				 count1++;
 			 }
 		 }
-		String lastline = alllines.get(alllines.size()-1);
-		numbersinaline = lastline.split("\\s+");
-		startV = Integer.parseInt(numbersinaline[0]);
-		endV = Integer.parseInt(numbersinaline[1]);
+		 /*
+		  * get the starting vertex and ending vertex no
+		  */
+		String lastline = vertexLines.get(vertexLines.size()-1);
+		vertexEdge = lastline.split("\\s+");
+		firstVertex = Integer.parseInt(vertexEdge[0]);
+		lastVertex = Integer.parseInt(vertexEdge[1]);
 		
-
+		/*
+		 * find all the avaliable path avaliable from the start vertex to end vertex and store to VisitedVertex
+		 */
 		int parent=0;
-		int index = startV;
+		int index = firstVertex;
 		boolean visitedSetted = false;
-		while(x <= y){
+		while(numVisitedEdge <= totalEdge){
 			
 			parent = index;
-			index = getsmallest(arrayofvertice, index, parent);
-			visitedSetted = setVisited(parent, index, arrayofvertice);
+			index = getsmallest(vertexArray, index, parent);
+			visitedSetted = setVisited(parent, index, vertexArray);
 			if(!VisitedVertex.isEmpty()){
-			if(VisitedVertex.get(VisitedVertex.size()-1) != index && index != 2){
-				VisitedVertex.add(index);
-			}
+				if(VisitedVertex.get(VisitedVertex.size()-1) != index && index != 2){
+					VisitedVertex.add(index);
+				}
 			}
 			else{
 				VisitedVertex.add(index);
 			}
 			if(visitedSetted == true){
-				if(index == endV){
-					x = x-2;
+				if(index == lastVertex){
+					numVisitedEdge = numVisitedEdge-2;
 					index = parent;
-
 				}
 			}
-		}		
-		
-		// create graph here
-		
-		
-		// do the work here
-		
-
-		// end timer and print total time
+		}
+		/*
+		 * regroup the vertex path by setting to complete path with start and end vertex for each path
+		 */
 		ArrayList<Integer> list = new ArrayList<Integer>();
-		list.add(startV);
+		list.add(firstVertex);
 		for(int i=0;i<VisitedVertex.size();i++){
-			if(VisitedVertex.get(i) != endV){
+			if(VisitedVertex.get(i) != lastVertex){
 				list.add(VisitedVertex.get(i));
 			}else if(i != VisitedVertex.size()){
 				list.add(VisitedVertex.get(i));
 				if(i+1 != VisitedVertex.size()){
-					list.add(startV);
+					list.add(firstVertex);
 				}
 			}
 		}
+		/*
+		 * calculate and compare to get the shortest distance for the path.
+		 */
 		String finalPath = null;
 		String path = null;
 		int tempPath = 0;
 		int currentIndex =0;
 		int finalDist =0;
 		for(int a=0;a<list.size();a++){
-			//System.out.println(list.get(a));
-			if(list.get(a) == startV){
+			if(list.get(a) == firstVertex){
 				path = Integer.toString(list.get(a));
 				tempPath =0;
 				currentIndex = list.get(a);
 				continue;
 			}
-			if(list.get(a) == endV){
-				//System.out.println("ending 1 path");
+			if(list.get(a) == lastVertex){
 				path = path + " " + list.get(a);
-				for(int i=0;i<arrayofvertice[currentIndex].getAdjList().size();i++){
-					if(arrayofvertice[currentIndex].getAdjList().get(i).getVertexNumber() == endV){
-						tempPath = tempPath + arrayofvertice[currentIndex].getAdjList().get(i).getVertexValue();
-						//System.out.println("Path " + path);
-						//System.out.println("Dist "  + tempPath + " " + finalDist);
+				for(int i=0;i<vertexArray[currentIndex].getAdjList().size();i++){
+					if(vertexArray[currentIndex].getAdjList().get(i).getVertexNumber() == lastVertex){
+						tempPath = tempPath + vertexArray[currentIndex].getAdjList().get(i).getVertexValue();
 						if(finalDist ==0){
 							finalDist = tempPath;
 							finalPath = path;
@@ -128,77 +129,76 @@ public class Main {
 					}
 				}
 			}
-			if(list.get(a) != endV && list.get(a) != startV){
-				for(int i=0;i<arrayofvertice[currentIndex].getAdjList().size();i++){
-					if(arrayofvertice[currentIndex].getAdjList().get(i).getVertexNumber() == list.get(a)){
-						path = path + " " + arrayofvertice[currentIndex].getAdjList().get(i).getVertexNumber();
-						//System.out.println("path 2 " +path);
-						//System.out.println("before dist " +tempPath);
-						tempPath = tempPath + arrayofvertice[currentIndex].getAdjList().get(i).getVertexValue();
-						//System.out.println("dist 2 " +tempPath);
-						currentIndex = arrayofvertice[currentIndex].getAdjList().get(i).getVertexNumber();
+			if(list.get(a) != lastVertex && list.get(a) != firstVertex){
+				for(int i=0;i<vertexArray[currentIndex].getAdjList().size();i++){
+					if(vertexArray[currentIndex].getAdjList().get(i).getVertexNumber() == list.get(a)){
+						path = path + " " + vertexArray[currentIndex].getAdjList().get(i).getVertexNumber();
+						tempPath = tempPath + vertexArray[currentIndex].getAdjList().get(i).getVertexValue();
+						currentIndex = vertexArray[currentIndex].getAdjList().get(i).getVertexNumber();
 						continue;
 					}
 				}
 			}
-			//System.out.println("out come " + finalPath+" " + finalDist);
 		}
 		System.out.println("shortest path " + finalPath);
 		System.out.println("Shortest Dist " + finalDist);
 		long end = System.currentTimeMillis();
 		System.out.println("\nElapsed time: " + (end - start) + " milliseconds");
 	}
-	
-private static boolean setVisited(int parent, int index, Vertex[] arrayofvertice) {
+	/*
+	 * set the edge to be visited after travel though to make sure its does no use the path again.
+	 */
+private static boolean setVisited(int parent, int index, Vertex[] vertexArray) {
 	boolean firstcon=false;
 	boolean secondcon = false;
-		for(int i =0;i< arrayofvertice[index].getAdjList().size();i++){
-			if(arrayofvertice[index].getAdjList().get(i).getVertexNumber() == parent){
-				arrayofvertice[index].getAdjList().get(i).setVisited(true);
+		for(int i =0;i< vertexArray[index].getAdjList().size();i++){
+			if(vertexArray[index].getAdjList().get(i).getVertexNumber() == parent){
+				vertexArray[index].getAdjList().get(i).setVisited(true);
 				firstcon = true;
 			
 			}
 		}
-		for(int i =0;i<arrayofvertice[parent].getAdjList().size();i++){
-			if(arrayofvertice[parent].getAdjList().get(i).getVertexNumber() == index){
-				arrayofvertice[parent].getAdjList().get(i).setVisited(true);
+		for(int i =0;i<vertexArray[parent].getAdjList().size();i++){
+			if(vertexArray[parent].getAdjList().get(i).getVertexNumber() == index){
+				vertexArray[parent].getAdjList().get(i).setVisited(true);
 				secondcon = true;
 				
 			}
 		}
 		if(firstcon ==true && secondcon==true){
-			x= x+2;
+			numVisitedEdge= numVisitedEdge+2;
 			return true;
 		}
 		return false;
 	}
-
-public static int getsmallest(Vertex[] arrayofvertice, int index, int parent){
+/*
+ * find the smallest distance that has no been travel and return the index of the vertex
+ */
+public static int getsmallest(Vertex[] vertexArray, int index, int parent){
 	int result =0;
 	int min = 0;
 	int count=0;
-	for(int j =0;j< arrayofvertice[index].getAdjList().size();j++){
-		if(!arrayofvertice[index].getAdjList().get(j).isVisited()){
-			if(arrayofvertice[index].getAdjList().get(j).getVertexNumber() != parent){
-			if(min == 0){
-				min = arrayofvertice[index].getAdjList().get(j).getVertexValue();
-				result = arrayofvertice[index].getAdjList().get(j).getVertexNumber();
-			}
-			else if(min>arrayofvertice[index].getAdjList().get(j).getVertexValue() && arrayofvertice[index].getAdjList().get(j).getVertexNumber() != parent && arrayofvertice[index].getAdjList().get(j).getVertexNumber() != startV){
-				min = arrayofvertice[index].getAdjList().get(j).getVertexValue();
-				result = arrayofvertice[index].getAdjList().get(j).getVertexNumber();
-			}
+	for(int j =0;j< vertexArray[index].getAdjList().size();j++){
+		if(!vertexArray[index].getAdjList().get(j).isVisited()){
+			if(vertexArray[index].getAdjList().get(j).getVertexNumber() != parent){
+				if(min == 0){
+					min = vertexArray[index].getAdjList().get(j).getVertexValue();
+					result = vertexArray[index].getAdjList().get(j).getVertexNumber();
+				}else if(min>vertexArray[index].getAdjList().get(j).getVertexValue() && vertexArray[index].getAdjList().get(j).getVertexNumber() != parent && vertexArray[index].getAdjList().get(j).getVertexNumber() != firstVertex){
+					min = vertexArray[index].getAdjList().get(j).getVertexValue();
+					result = vertexArray[index].getAdjList().get(j).getVertexNumber();
+				}
 			}
 		}
 		else{
 			count++;
 		}		
 	}
-	if(count == arrayofvertice[index].getAdjList().size()){
-		result = Integer.parseInt(arrayofvertice[parent].getParent());
+	if(count == vertexArray[index].getAdjList().size()){
+		result = Integer.parseInt(vertexArray[parent].getParent());
 	}
 	else if(result != parent){
-	arrayofvertice[result].setParent(Integer.toString(parent));
+	vertexArray[result].setParent(Integer.toString(parent));
 	}
 	return result;
 }
